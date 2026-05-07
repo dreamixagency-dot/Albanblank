@@ -3,310 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartDoc MNS Professional - Стандарт Албан Бланк</title>
+    <title>SmartDoc MNS 5140:2021 - Албан Бланк</title>
     
+    <!-- PDF хөрвүүлэгч -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Tailwind CSS UI-д зориулав -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- 
-    <!-- Chosen Palette: Slate & MNS Blue. Background: slate-200, Editor: dark, Paper: Pure White. -->
     <!-- Application Structure Plan: 
-         - Precise layout engine using millimeter units (mm) to guarantee MNS 5140:2021 geometry.
-         - Logic to handle A4 and A5 sizes with dynamic margin adjustments.
-         - Corner mark placement based on internal print bounds.
-    -->
-    <!-- Visualization & Content Choices: 
-         - UI: Professional dashboard.
-         - Export: High-fidelity PDF with 300DPI rendering.
+         Strict adherence to MNS 5140:2021 based on provided image l2588.png.
+         - The document container uses EXACT millimeter measurements (210mm x 297mm).
+         - NO responsive CSS applied to the A4 paper to ensure 1:1 PDF conversion.
+         - UI controls are separated into a left sidebar.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     -->
 
     <style>
-        :root { --mns-blue: #1e40af; }
-        body { font-family: 'Inter', sans-serif; background-color: #e2e8f0; margin: 0; }
+        /* Зураг дээрх албан бланкийн тусгай цэнхэр өнгө */
+        :root { --mns-blue: #174ea6; }
         
-        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar-scroll::-webkit-scrollbar { width: 5px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: #0f172a; }
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
 
-        /* MNS 5140:2021 ABSOLUTE GEOMETRY */
-        .mns-page {
+        .preview-area { flex-grow: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 40px; background-color: #64748b; }
+
+        /* =========================================
+           ЭНЭ ХЭСЭГ ХАМГИЙН ЧУХАЛ (A4 Standard)
+           ========================================= */
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
             background: white;
-            margin: 0 auto;
-            position: relative;
-            box-shadow: 0 0 40px rgba(0,0,0,0.15);
-            color: #000;
-            overflow: hidden;
+            /* Стандарт захын зай: Дээд 20мм, Баруун 15мм, Доод 20мм, Зүүн 30мм */
+            padding: 20mm 15mm 20mm 30mm;
             box-sizing: border-box;
-            font-family: Arial, "Helvetica", sans-serif;
-            page-break-after: always;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            /* Албан бичгийн стандарт фонт Arial */
+            font-family: Arial, Helvetica, sans-serif;
+            color: black;
         }
 
-        /* A4 Standard */
-        .size-a4 { 
-            width: 210mm; 
-            height: 297mm; 
-            padding-top: 20mm; 
-            padding-right: 15mm; 
-            padding-bottom: 20mm; 
-            padding-left: 30mm; 
-        }
+        /* Булангийн тэмдэгтүүд (Corner marks) - Зурагтай яг ижил */
+        .corner-mark { position: absolute; width: 12mm; height: 12mm; border-color: #475569; border-width: 0.5pt; opacity: 0.8; }
+        .cm-tl { top: 20mm; left: 30mm; border-top-style: solid; border-left-style: solid; }
+        .cm-tr { top: 20mm; right: 15mm; border-top-style: solid; border-right-style: solid; }
+        .cm-bl { bottom: 20mm; left: 30mm; border-bottom-style: solid; border-left-style: solid; }
+        .cm-br { bottom: 20mm; right: 15mm; border-bottom-style: solid; border-right-style: solid; }
 
-        /* A5 Standard */
-        .size-a5 { 
-            width: 148mm; 
-            height: 210mm; 
-            padding-top: 15mm; 
-            padding-right: 10mm; 
-            padding-bottom: 15mm; 
-            padding-left: 25mm; 
-        }
+        /* Толгой хэсэг (Header) */
+        .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+        .header-left { width: 60%; color: var(--mns-blue); }
+        .header-right { width: 35%; text-align: right; padding-top: 5mm; }
 
-        /* Corner Marks - Archival Standards */
-        .l-mark { position: absolute; width: 10mm; height: 10mm; border-color: #94a3b8; border-width: 0.3mm; opacity: 0.7; }
-        .lt { top: 10mm; left: 10mm; border-top-style: solid; border-left-style: solid; }
-        .rt { top: 10mm; right: 10mm; border-top-style: solid; border-right-style: solid; }
-        .lb { bottom: 10mm; left: 10mm; border-bottom-style: solid; border-left-style: solid; }
-        .rb { bottom: 10mm; right: 10mm; border-bottom-style: solid; border-right-style: solid; }
+        /* Илгээгчийн мэдээлэл */
+        .org-direction { font-size: 10pt; font-weight: bold; line-height: 1.2; margin-bottom: 4px; }
+        .org-name { font-size: 14pt; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; letter-spacing: -0.5px; }
+        .org-contact { font-size: 9.5pt; line-height: 1.4; }
 
-        /* Header Components per Image l2588.png */
-        .split-header { display: flex; justify-content: space-between; align-items: flex-start; min-height: 45mm; }
-        .sender-block { width: 60%; }
-        .recipient-block { width: 35%; text-align: right; font-weight: bold; font-size: 11pt; padding-top: 10mm; line-height: 1.2; text-transform: uppercase; }
+        /* Хүлээн авагч */
+        .recipient-text { font-size: 11pt; font-weight: bold; text-transform: uppercase; line-height: 1.3; }
 
-        .org-type { font-size: 11pt; font-weight: bold; color: var(--mns-blue); margin-bottom: 2px; }
-        .org-main-name { font-size: 16pt; font-weight: 900; color: var(--mns-blue); text-transform: uppercase; margin-bottom: 8px; }
-        .org-contacts { font-size: 10pt; color: var(--mns-blue); line-height: 1.4; }
+        /* Дугаарлалт, ишлэл (Зураг дээрх цул шугамууд) */
+        .ref-section { margin-top: 15mm; font-size: 10pt; color: var(--mns-blue); }
+        .ref-row { display: flex; align-items: flex-end; margin-bottom: 8px; }
+        .ref-line { border-bottom: 1px solid var(--mns-blue); height: 12px; }
 
-        /* Reference Section with lines */
-        .ref-box { margin-top: 20mm; font-size: 11pt; }
-        .ref-row { display: flex; align-items: baseline; margin-bottom: 4px; }
-        .ref-line { border-bottom: 1px solid #000; flex-grow: 1; margin: 0 5px; height: 14px; min-width: 40px; position: relative; top: -2px; }
+        /* Агуулга */
+        .subject-text { text-align: center; font-weight: bold; font-size: 12pt; text-transform: uppercase; margin: 40px 0 30px 0; }
+        .body-text { text-align: justify; line-height: 1.5; font-size: 12pt; white-space: pre-wrap; text-indent: 15mm; min-height: 300px; }
 
-        /* Subject & Body */
-        .doc-subject { text-align: center; font-weight: bold; font-size: 12pt; margin: 40px 0 30px 0; text-transform: uppercase; line-height: 1.3; }
-        .doc-body { text-align: justify; line-height: 1.6; font-size: 12pt; white-space: pre-wrap; text-indent: 15mm; }
-        
-        /* Signature Area per Image */
-        .sig-block { margin-top: 80px; display: flex; justify-content: space-between; align-items: flex-end; font-weight: bold; font-size: 11pt; }
-        .sig-placeholder { font-style: italic; font-weight: normal; font-size: 10pt; padding: 0 10px; }
+        /* Гарын үсэг */
+        .signature-block { margin-top: 80px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11pt; font-weight: bold; text-transform: uppercase; }
+        .sign-placeholder { font-style: italic; font-weight: normal; font-size: 10pt; text-transform: none; }
 
-        /* Archive/Footer ID per Image */
-        .archive-footer { position: absolute; bottom: 15mm; right: 15mm; text-align: right; font-size: 9pt; color: #000; }
+        /* Footer Archive ID */
+        .archive-id { position: absolute; bottom: 15mm; right: 15mm; text-align: right; font-size: 9pt; line-height: 1.3; }
 
         @media print {
             .no-print { display: none; }
-            body { background: white; }
-            .mns-page { box-shadow: none; margin: 0; }
+            body { background: white; padding: 0; display: block; }
+            .preview-area { padding: 0; background: white; display: block; }
+            .a4-paper { box-shadow: none; margin: 0; }
         }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body>
 
-    <!-- Sidebar Editor -->
-    <aside class="no-print w-96 bg-slate-900 text-white flex flex-col shadow-2xl z-20">
-        <div class="p-6 bg-slate-950 border-b border-slate-800">
+    <!-- Удирдлагын хэсэг (Sidebar) -->
+    <aside class="no-print w-[400px] bg-slate-900 text-white flex flex-col shadow-2xl z-10 flex-shrink-0">
+        <div class="p-6 border-b border-slate-800 bg-slate-950">
             <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fa-solid fa-file-shield text-blue-500"></i> SmartDoc Pro
+                <i class="fa-solid fa-stamp text-blue-500"></i> SmartDoc MNS
             </h1>
+            <p class="text-xs text-slate-400 mt-1">MNS 5140:2021 Албан бланкийн стандарт</p>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 space-y-8 sidebar-scroll">
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 sidebar-scroll">
             
-            <!-- Paper & Template -->
-            <div class="space-y-4">
-                <label class="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Стандарт тохиргоо</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <select id="sel-size" onchange="updateUI()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded-lg text-sm">
-                        <option value="a4">A4 (Стандарт)</option>
-                        <option value="a5">A5 (Бага)</option>
-                    </select>
-                    <select id="sel-type" onchange="applyTemplate()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded-lg text-sm">
-                        <option value="letter">Албан бичиг</option>
-                        <option value="order">Тушаал</option>
-                    </select>
+            <!-- Илгээгч -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-end">
+                    <label class="text-[11px] font-bold uppercase text-slate-400 tracking-wider text-blue-400">Илгээгч байгууллага</label>
+                    <input type="color" id="in-color" value="#174ea6" oninput="updateColor()" class="w-6 h-6 rounded cursor-pointer bg-transparent" title="Бланкийн хэвлэмэл өнгө">
                 </div>
-            </div>
-
-            <!-- Branding -->
-            <div class="space-y-4">
-                <label class="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Байгууллага</label>
-                <div class="flex gap-2">
-                    <button onclick="document.getElementById('logo-file').click()" class="flex-1 bg-slate-800 border border-slate-700 p-2 rounded text-xs font-bold hover:bg-slate-700 transition-colors">ЛОГО СОЛИХ</button>
-                    <input type="file" id="logo-file" hidden accept="image/*" onchange="handleLogo(event)">
-                </div>
-                <input type="text" id="in-dir" value="Байгууллагын үйл ажиллагааны чиглэл" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm">
-                <input type="text" id="in-name" value="“КОМПАНИЙН НЭР” ХХК" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm font-bold">
-                <textarea id="in-addr" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm h-24">12001 Улаанбаатар хот, Баянгол дүүрэг
+                
+                <input type="text" id="in-dir" placeholder="Үйл ажиллагааны чиглэл" value="Байгууллагын үйл ажиллагааны чиглэл" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm focus:border-blue-500 outline-none transition-colors">
+                
+                <input type="text" id="in-name" placeholder="Компанийн нэр" value="“КОМПАНИЙН НЭР” ХХК" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm font-bold focus:border-blue-500 outline-none transition-colors">
+                
+                <textarea id="in-contact" placeholder="Хаяг, утас, и-мэйл" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm h-24 focus:border-blue-500 outline-none transition-colors leading-relaxed">12001 Улаанбаатар хот, Баянгол дүүрэг
 Утас: +976 0000 0000; 0000 0000
 И-мэйл: xxxxxxxx@gmail.com</textarea>
             </div>
 
-            <!-- Recipient & Content -->
-            <div class="space-y-4">
-                <label class="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Агуулга</label>
-                <input type="text" id="in-recipient" value="ЯВУУЛАХ БАЙГУУЛЛАГЫН НЭР" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm">
-                <input type="text" id="in-subject" value="АЛБАН БИЧГИЙН ТОВЧ УТГА" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm font-bold">
-                <textarea id="in-body" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm h-48">Энэхүү албан бичгээр дамжуулан бид өөрсдийн хүсэлтийг хүргүүлж байна. Хххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</textarea>
+            <hr class="border-slate-800">
+
+            <!-- Хүлээн авагч -->
+            <div class="space-y-3">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-blue-400">Хүлээн авагч</label>
+                <input type="text" id="in-recipient" value="ЯВУУЛАХ БАЙГУУЛЛАГЫН НЭР" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm focus:border-blue-500 outline-none">
             </div>
 
-            <!-- Signature -->
-            <div class="space-y-4">
-                <label class="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Гарын үсэг</label>
+            <hr class="border-slate-800">
+
+            <!-- Агуулга -->
+            <div class="space-y-3">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-blue-400">Албан бичгийн утга</label>
+                <input type="text" id="in-subject" value="АЛБАН БИЧГИЙН ТОВЧ УТГА" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm font-bold focus:border-blue-500 outline-none">
+                
+                <textarea id="in-body" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm h-48 focus:border-blue-500 outline-none leading-relaxed">Ххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</textarea>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- Гарын үсэг -->
+            <div class="space-y-3">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-blue-400">Гарын үсэг</label>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" id="in-sign-pos" value="АЛБАН ТУШААЛ" oninput="sync()" class="bg-slate-800 border border-slate-700 p-2.5 rounded text-sm">
-                    <input type="text" id="in-sign-name" value="ГАРЫН ҮСГИЙН ТАЙЛАЛ" oninput="sync()" class="bg-slate-800 border border-slate-700 p-2.5 rounded text-sm">
+                    <input type="text" id="in-sign-pos" value="АЛБАН ТУШААЛ" oninput="sync()" class="bg-slate-800 border border-slate-700 p-2.5 rounded text-sm focus:border-blue-500 outline-none" placeholder="Албан тушаал">
+                    <input type="text" id="in-sign-name" value="ГАРЫН ҮСГИЙН ТАЙЛАЛ" oninput="sync()" class="bg-slate-800 border border-slate-700 p-2.5 rounded text-sm focus:border-blue-500 outline-none" placeholder="Нэр">
                 </div>
             </div>
+
         </div>
 
-        <div class="p-6 bg-slate-950">
-            <button onclick="downloadPDF()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">
-                <i class="fa-solid fa-file-pdf text-lg"></i> PDF БОЛГОН ТАТАХ
+        <div class="p-6 bg-slate-950 border-t border-slate-800">
+            <button onclick="generatePDF()" id="pdf-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/50">
+                <i class="fa-solid fa-file-pdf"></i> СТАНДАРТ PDF ГАРГАХ
             </button>
         </div>
     </aside>
 
-    <!-- Preview Canvas -->
-    <main class="flex-1 p-10 overflow-y-auto flex items-start justify-center">
+    <!-- Харагдах хэсэг (Preview) -->
+    <main class="preview-area custom-scrollbar">
         
-        <div id="mns-document" class="mns-page size-a4">
-            <!-- Corner Marks -->
-            <div class="l-mark lt"></div>
-            <div class="l-mark rt"></div>
-            <div class="l-mark lb"></div>
-            <div class="l-mark rb"></div>
+        <!-- А4 Хэмжээтэй цаас (Хэзээ ч хэлбэрээ алдахгүй) -->
+        <div id="mns-document" class="a4-paper">
+            
+            <!-- 4 Булангийн тэмдэгт -->
+            <div class="corner-mark cm-tl"></div>
+            <div class="corner-mark cm-tr"></div>
+            <div class="corner-mark cm-bl"></div>
+            <div class="corner-mark cm-br"></div>
 
-            <!-- Standard Header -->
-            <div class="split-header">
-                <div class="sender-block">
-                    <div class="flex gap-4 items-start">
-                        <div id="logo-wrap" class="w-16 h-16 bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
-                            <span class="text-[10px] text-slate-300">ЛОГО</span>
-                        </div>
-                        <div>
-                            <div id="out-dir" class="org-type">Байгууллагын үйл ажиллагааны чиглэл</div>
-                            <div id="out-name" class="org-main-name">“КОМПАНИЙН НЭР” ХХК</div>
-                            <div id="out-contacts" class="org-contacts whitespace-pre-wrap">12001 Улаанбаатар хот, Баянгол дүүрэг
+            <!-- Зураг дээрх толгой хэсэг -->
+            <div class="header-section">
+                <!-- Зүүн: Илгээгч -->
+                <div class="header-left">
+                    <div id="out-dir" class="org-direction">Байгууллагын үйл ажиллагааны чиглэл</div>
+                    <div id="out-name" class="org-name">“КОМПАНИЙН НЭР” ХХК</div>
+                    <div id="out-contact" class="org-contact whitespace-pre-wrap">12001 Улаанбаатар хот, Баянгол дүүрэг
 Утас: +976 0000 0000; 0000 0000
 И-мэйл: xxxxxxxx@gmail.com</div>
-                        </div>
-                    </div>
-
-                    <!-- Ref Box -->
-                    <div class="ref-box">
+                    
+                    <!-- Зураг дээрх дугаарлалтын шугамууд -->
+                    <div class="ref-section">
                         <div class="ref-row">
-                            <div class="ref-line"></div> № <div class="ref-line" style="width: 80px;"></div>
+                            <div class="ref-line w-28"></div>
+                            <span class="px-1">№</span>
+                            <div class="ref-line w-28"></div>
                         </div>
-                        <div class="ref-row">
-                            танай <div class="ref-line"></div> № <div class="ref-line" style="width: 80px;"></div> т
+                        <div class="ref-row mt-1">
+                            <span class="pr-1">танай</span>
+                            <div class="ref-line w-20"></div>
+                            <span class="px-1">№</span>
+                            <div class="ref-line w-28"></div>
+                            <span class="pl-1">т</span>
                         </div>
                     </div>
                 </div>
-                <div id="out-recipient" class="recipient-block">ЯВУУЛАХ БАЙГУУЛЛАГЫН НЭР</div>
+
+                <!-- Баруун: Хүлээн авагч -->
+                <div class="header-right">
+                    <div id="out-recipient" class="recipient-text">ЯВУУЛАХ БАЙГУУЛЛАГЫН НЭР</div>
+                </div>
             </div>
 
-            <!-- Subject -->
-            <div id="out-subject" class="doc-subject">АЛБАН БИЧГИЙН ТОВЧ УТГА</div>
+            <!-- Утга -->
+            <div id="out-subject" class="subject-text">АЛБАН БИЧГИЙН ТОВЧ УТГА</div>
 
-            <!-- Body -->
-            <div id="out-body" class="doc-body">Энэхүү албан бичгээр дамжуулан бид өөрсдийн хүсэлтийг хүргүүлж байна. Хххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</div>
+            <!-- Бичвэр -->
+            <div id="out-body" class="body-text">Ххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</div>
 
-            <!-- Signature -->
-            <div class="sig-block">
+            <!-- Гарын үсэг -->
+            <div class="signature-block">
                 <div id="out-sign-pos">АЛБАН ТУШААЛ</div>
-                <div class="sig-placeholder">гарын үсэг</div>
+                <div class="sign-placeholder">гарын үсэг</div>
                 <div id="out-sign-name">ГАРЫН ҮСГИЙН ТАЙЛАЛ</div>
             </div>
 
-            <!-- Archive Meta -->
-            <div class="archive-footer">
-                <div class="mb-1">0000000001</div>
-                <div id="meta-archive">D/Албан бичиг – 2026/01-01 Компани</div>
+            <!-- Баруун доод өнцөг: Архивын дугаар -->
+            <div class="archive-id">
+                <div class="mb-0.5">0000000001</div>
+                <div id="out-archive-meta">D/Албан бичиг – 20,,/01-01 Албан бичиг</div>
             </div>
-        </div>
 
+        </div>
     </main>
 
     <script>
-        const templates = {
-            letter: { subject: "АЛБАН БИЧГИЙН ТОВЧ УТГА", sign: "АЛБАН ТУШААЛ" },
-            order: { subject: "ТУШААЛ ГАРГАХ ТУХАЙ", sign: "ГҮЙЦЭТГЭХ ЗАХИРАЛ" }
-        };
-
+        // Датаг шууд холбох функц
         function sync() {
             document.getElementById('out-dir').innerText = document.getElementById('in-dir').value;
             document.getElementById('out-name').innerText = document.getElementById('in-name').value;
-            document.getElementById('out-contacts').innerText = document.getElementById('in-contacts').value;
+            document.getElementById('out-contact').innerText = document.getElementById('in-contact').value;
             document.getElementById('out-recipient').innerText = document.getElementById('in-recipient').value;
             document.getElementById('out-subject').innerText = document.getElementById('in-subject').value;
             document.getElementById('out-body').innerText = document.getElementById('in-body').value;
             document.getElementById('out-sign-pos').innerText = document.getElementById('in-sign-pos').value;
             document.getElementById('out-sign-name').innerText = document.getElementById('in-sign-name').value;
             
-            // Sync meta archive info
-            const nameBrief = document.getElementById('in-name').value.replace(/[^а-яА-Яa-zA-Z0-9]/g, '').slice(0, 10);
-            document.getElementById('meta-archive').innerText = `D/Бичиг – 2026/01-01 ${nameBrief}`;
+            // Архивын нэрийг автоматаар үүсгэх
+            const rawName = document.getElementById('in-name').value;
+            // Тусгай тэмдэгтүүдийг арилгаж эхний үгийг авах
+            const cleanName = rawName.replace(/“|”|'|"|ХХК|ХХК-ИЙН/gi, '').trim().split(' ')[0] || 'Байгууллага';
+            const currentYear = new Date().getFullYear().toString().substr(-2);
+            document.getElementById('out-archive-meta').innerText = `D/Албан бичиг – ${currentYear},,/01-01 ${cleanName}`;
         }
 
-        function updateUI() {
-            const size = document.getElementById('sel-size').value;
-            const doc = document.getElementById('mns-document');
-            doc.className = `mns-page size-${size}`;
+        // Бланкийн хэвлэмэл өнгийг өөрчлөх
+        function updateColor() {
+            const color = document.getElementById('in-color').value;
+            document.documentElement.style.setProperty('--mns-blue', color);
         }
 
-        function applyTemplate() {
-            const type = document.getElementById('sel-type').value;
-            const data = templates[type];
-            document.getElementById('in-subject').value = data.subject;
-            document.getElementById('in-sign-pos').value = data.sign;
-            sync();
-        }
-
-        function handleLogo(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const wrap = document.getElementById('logo-wrap');
-                    wrap.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-contain">`;
-                    wrap.classList.remove('border-dashed', 'bg-slate-50');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function downloadPDF() {
+        // PDF Хөрвүүлэлт - ХАМГИЙН ӨНДӨР ЧАНАРААР
+        async function generatePDF() {
             const element = document.getElementById('mns-document');
-            const size = document.getElementById('sel-size').value;
-            const orgName = document.getElementById('in-name').value.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const btn = document.getElementById('pdf-btn');
             
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> ТҮР ХҮЛЭЭНЭ ҮҮ...';
+            btn.disabled = true;
+
             const opt = {
                 margin: 0,
-                filename: `MNS_Standard_${orgName}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: size, orientation: 'portrait' }
+                filename: 'Албан_Бичиг_MNS5140.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                // scale: 4 нь фонтыг маш тод, ямар ч арзайлтгүй гаргана
+                html2canvas: { scale: 4, useCORS: true, letterRendering: true }, 
+                // exact A4 dimensions
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-
-            const btn = document.querySelector('button[onclick="downloadPDF()"]');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> БОЛОВСРУУЛЖ БАЙНА...';
-            btn.disabled = true;
 
             try {
                 await html2pdf().set(opt).from(element).save();
-                btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> PDF БОЛГОН ТАТАХ';
+            } catch (error) {
+                console.error("PDF үүсгэхэд алдаа гарлаа: ", error);
+                alert("PDF үүсгэхэд алдаа гарлаа. Та дахин оролдоно уу.");
+            } finally {
+                btn.innerHTML = originalText;
                 btn.disabled = false;
-            } catch (err) {
-                console.error(err);
-                btn.innerHTML = 'АЛДАА ГАРЛАА';
             }
         }
 
-        // Init
-        sync();
+        // Анхны ачаалалт
+        window.onload = sync;
     </script>
 </body>
 </html>
