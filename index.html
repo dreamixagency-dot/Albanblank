@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartDoc MNS 5140:2021 - Албан Бланк</title>
+    <title>SmartDoc MNS 5140:2021 - Логотой Албан Бланк</title>
     
-    <!-- PDF хөрвүүлэгч -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Tailwind CSS UI-д зориулав -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- 
     <!-- Application Structure Plan: 
-         Strict adherence to MNS 5140:2021 based on provided image l2588.png.
-         - The document container uses EXACT millimeter measurements (210mm x 297mm).
-         - NO responsive CSS applied to the A4 paper to ensure 1:1 PDF conversion.
-         - UI controls are separated into a left sidebar.
+         - Strict MNS 5140:2021 formatting based on the specific split-header design in l2588.png.
+         - Left column content (Logo, Direction, Name, Address, Ref) is now properly center-aligned within its column.
+         - Logo image element added explicitly at the top of the left column.
+         - Fixed A4 paper size to guarantee 1:1 PDF rendering without responsive distortion.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     -->
 
     <style>
-        /* Зураг дээрх албан бланкийн тусгай цэнхэр өнгө */
+        /* Зураг дээрх хэвлэмэл цэнхэр өнгө */
         :root { --mns-blue: #174ea6; }
         
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -33,46 +31,56 @@
 
         .preview-area { flex-grow: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 40px; background-color: #64748b; }
 
-        /* =========================================
-           ЭНЭ ХЭСЭГ ХАМГИЙН ЧУХАЛ (A4 Standard)
-           ========================================= */
+        /* A4 Цаас - ХЭЗЭЭ Ч ӨӨРЧЛӨГДӨХГҮЙ ХАТУУ ХЭМЖЭЭ */
         .a4-paper {
             width: 210mm;
             min-height: 297mm;
             background: white;
-            /* Стандарт захын зай: Дээд 20мм, Баруун 15мм, Доод 20мм, Зүүн 30мм */
+            /* MNS Стандарт захын зай: Дээд 20мм, Баруун 15мм, Доод 20мм, Зүүн 30мм */
             padding: 20mm 15mm 20mm 30mm;
             box-sizing: border-box;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            /* Албан бичгийн стандарт фонт Arial */
             font-family: Arial, Helvetica, sans-serif;
             color: black;
         }
 
-        /* Булангийн тэмдэгтүүд (Corner marks) - Зурагтай яг ижил */
+        /* 4 Булангийн тэмдэгт (Corner marks) */
         .corner-mark { position: absolute; width: 12mm; height: 12mm; border-color: #475569; border-width: 0.5pt; opacity: 0.8; }
         .cm-tl { top: 20mm; left: 30mm; border-top-style: solid; border-left-style: solid; }
         .cm-tr { top: 20mm; right: 15mm; border-top-style: solid; border-right-style: solid; }
         .cm-bl { bottom: 20mm; left: 30mm; border-bottom-style: solid; border-left-style: solid; }
         .cm-br { bottom: 20mm; right: 15mm; border-bottom-style: solid; border-right-style: solid; }
 
-        /* Толгой хэсэг (Header) */
+        /* Толгой хэсэг (Split Header Layout) */
         .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
-        .header-left { width: 60%; color: var(--mns-blue); }
-        .header-right { width: 35%; text-align: right; padding-top: 5mm; }
+        
+        /* ЗҮҮН БАГАНА: Өөрийнхөө дотор голлож (Center) байрлана */
+        .header-left { 
+            width: 55%; 
+            color: var(--mns-blue); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; /* Лого болон текстүүд голлоно */
+            text-align: center; 
+        }
+        
+        .header-right { width: 40%; text-align: right; padding-top: 15mm; }
 
+        /* Лого */
+        .org-logo { max-height: 18mm; max-width: 50mm; object-fit: contain; margin-bottom: 5px; }
+        
         /* Илгээгчийн мэдээлэл */
-        .org-direction { font-size: 10pt; font-weight: bold; line-height: 1.2; margin-bottom: 4px; }
-        .org-name { font-size: 14pt; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; letter-spacing: -0.5px; }
+        .org-direction { font-size: 10pt; font-weight: bold; line-height: 1.2; margin-bottom: 3px; }
+        .org-name { font-size: 14pt; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: -0.5px; }
         .org-contact { font-size: 9.5pt; line-height: 1.4; }
 
         /* Хүлээн авагч */
         .recipient-text { font-size: 11pt; font-weight: bold; text-transform: uppercase; line-height: 1.3; }
 
-        /* Дугаарлалт, ишлэл (Зураг дээрх цул шугамууд) */
-        .ref-section { margin-top: 15mm; font-size: 10pt; color: var(--mns-blue); }
-        .ref-row { display: flex; align-items: flex-end; margin-bottom: 8px; }
+        /* Дугаарлалт, ишлэл (Зүүн баганадаа голлосон байна) */
+        .ref-section { margin-top: 12mm; font-size: 10pt; color: var(--mns-blue); width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .ref-row { display: flex; align-items: flex-end; justify-content: center; margin-bottom: 8px; width: 100%; }
         .ref-line { border-bottom: 1px solid var(--mns-blue); height: 12px; }
 
         /* Агуулга */
@@ -83,7 +91,7 @@
         .signature-block { margin-top: 80px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11pt; font-weight: bold; text-transform: uppercase; }
         .sign-placeholder { font-style: italic; font-weight: normal; font-size: 10pt; text-transform: none; }
 
-        /* Footer Archive ID */
+        /* Архивын дугаар */
         .archive-id { position: absolute; bottom: 15mm; right: 15mm; text-align: right; font-size: 9pt; line-height: 1.3; }
 
         @media print {
@@ -96,24 +104,34 @@
 </head>
 <body>
 
-    <!-- Удирдлагын хэсэг (Sidebar) -->
+    <!-- Удирдлагын хэсэг -->
     <aside class="no-print w-[400px] bg-slate-900 text-white flex flex-col shadow-2xl z-10 flex-shrink-0">
         <div class="p-6 border-b border-slate-800 bg-slate-950">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <i class="fa-solid fa-stamp text-blue-500"></i> SmartDoc MNS
             </h1>
-            <p class="text-xs text-slate-400 mt-1">MNS 5140:2021 Албан бланкийн стандарт</p>
+            <p class="text-xs text-slate-400 mt-1">Зурагт суурилсан хувилбар (Логотой)</p>
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 space-y-6 sidebar-scroll">
             
-            <!-- Илгээгч -->
+            <!-- Илгээгч & Лого -->
             <div class="space-y-3">
-                <div class="flex justify-between items-end">
-                    <label class="text-[11px] font-bold uppercase text-slate-400 tracking-wider text-blue-400">Илгээгч байгууллага</label>
-                    <input type="color" id="in-color" value="#174ea6" oninput="updateColor()" class="w-6 h-6 rounded cursor-pointer bg-transparent" title="Бланкийн хэвлэмэл өнгө">
+                <div class="flex justify-between items-end mb-2">
+                    <label class="text-[11px] font-bold uppercase text-slate-400 tracking-wider text-blue-400">Илгээгч байгууллага & Лого</label>
+                    <input type="color" id="in-color" value="#174ea6" oninput="updateColor()" class="w-6 h-6 rounded cursor-pointer bg-transparent" title="Хэвлэмэл өнгө">
                 </div>
                 
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('logo-file').click()" class="flex-1 bg-slate-800 border border-slate-700 p-2.5 rounded text-xs font-bold hover:bg-slate-700 transition-colors">
+                        <i class="fa-solid fa-image mr-1"></i> ЛОГО ОРУУЛАХ
+                    </button>
+                    <input type="file" id="logo-file" hidden accept="image/*" onchange="handleLogo(event)">
+                    <button onclick="removeLogo()" class="px-3 bg-red-900/30 text-red-500 hover:bg-red-900/50 rounded transition-colors" title="Лого устгах">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+
                 <input type="text" id="in-dir" placeholder="Үйл ажиллагааны чиглэл" value="Байгууллагын үйл ажиллагааны чиглэл" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm focus:border-blue-500 outline-none transition-colors">
                 
                 <input type="text" id="in-name" placeholder="Компанийн нэр" value="“КОМПАНИЙН НЭР” ХХК" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm font-bold focus:border-blue-500 outline-none transition-colors">
@@ -138,7 +156,7 @@
                 <label class="text-[11px] font-bold uppercase tracking-wider text-blue-400">Албан бичгийн утга</label>
                 <input type="text" id="in-subject" value="АЛБАН БИЧГИЙН ТОВЧ УТГА" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm font-bold focus:border-blue-500 outline-none">
                 
-                <textarea id="in-body" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm h-48 focus:border-blue-500 outline-none leading-relaxed">Ххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</textarea>
+                <textarea id="in-body" oninput="sync()" class="w-full bg-slate-800 border border-slate-700 p-2.5 rounded text-sm h-48 focus:border-blue-500 outline-none leading-relaxed">Энэхүү албан бичгээр дамжуулан бид өөрсдийн хүсэлтийг хүргүүлж байна. Хххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</textarea>
             </div>
 
             <hr class="border-slate-800">
@@ -161,10 +179,9 @@
         </div>
     </aside>
 
-    <!-- Харагдах хэсэг (Preview) -->
+    <!-- Харагдах хэсэг -->
     <main class="preview-area custom-scrollbar">
         
-        <!-- А4 Хэмжээтэй цаас (Хэзээ ч хэлбэрээ алдахгүй) -->
         <div id="mns-document" class="a4-paper">
             
             <!-- 4 Булангийн тэмдэгт -->
@@ -173,28 +190,29 @@
             <div class="corner-mark cm-bl"></div>
             <div class="corner-mark cm-br"></div>
 
-            <!-- Зураг дээрх толгой хэсэг -->
+            <!-- Толгой хэсэг -->
             <div class="header-section">
-                <!-- Зүүн: Илгээгч -->
+                <!-- Зүүн: Илгээгч (Лого хамгийн дээр голлож байрлана) -->
                 <div class="header-left">
+                    <img id="out-logo" src="" alt="Лого" class="org-logo" style="display: none;">
                     <div id="out-dir" class="org-direction">Байгууллагын үйл ажиллагааны чиглэл</div>
                     <div id="out-name" class="org-name">“КОМПАНИЙН НЭР” ХХК</div>
                     <div id="out-contact" class="org-contact whitespace-pre-wrap">12001 Улаанбаатар хот, Баянгол дүүрэг
 Утас: +976 0000 0000; 0000 0000
 И-мэйл: xxxxxxxx@gmail.com</div>
                     
-                    <!-- Зураг дээрх дугаарлалтын шугамууд -->
+                    <!-- Зураг дээрх дугаарлалтын шугамууд (Голлосон) -->
                     <div class="ref-section">
                         <div class="ref-row">
-                            <div class="ref-line w-28"></div>
+                            <div class="ref-line w-20"></div>
                             <span class="px-1">№</span>
                             <div class="ref-line w-28"></div>
                         </div>
                         <div class="ref-row mt-1">
                             <span class="pr-1">танай</span>
-                            <div class="ref-line w-20"></div>
+                            <div class="ref-line w-16"></div>
                             <span class="px-1">№</span>
-                            <div class="ref-line w-28"></div>
+                            <div class="ref-line w-24"></div>
                             <span class="pl-1">т</span>
                         </div>
                     </div>
@@ -210,7 +228,7 @@
             <div id="out-subject" class="subject-text">АЛБАН БИЧГИЙН ТОВЧ УТГА</div>
 
             <!-- Бичвэр -->
-            <div id="out-body" class="body-text">Ххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххххх.</div>
+            <div id="out-body" class="body-text">Агуулга энд харагдана...</div>
 
             <!-- Гарын үсэг -->
             <div class="signature-block">
@@ -219,7 +237,7 @@
                 <div id="out-sign-name">ГАРЫН ҮСГИЙН ТАЙЛАЛ</div>
             </div>
 
-            <!-- Баруун доод өнцөг: Архивын дугаар -->
+            <!-- Архивын дугаар -->
             <div class="archive-id">
                 <div class="mb-0.5">0000000001</div>
                 <div id="out-archive-meta">D/Албан бичиг – 20,,/01-01 Албан бичиг</div>
@@ -229,7 +247,29 @@
     </main>
 
     <script>
-        // Датаг шууд холбох функц
+        // Логог оруулах
+        function handleLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imgEl = document.getElementById('out-logo');
+                    imgEl.src = e.target.result;
+                    imgEl.style.display = 'block'; // Логог харуулах
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Логог устгах
+        function removeLogo() {
+            const imgEl = document.getElementById('out-logo');
+            imgEl.src = '';
+            imgEl.style.display = 'none';
+            document.getElementById('logo-file').value = '';
+        }
+
+        // Датаг шууд холбох
         function sync() {
             document.getElementById('out-dir').innerText = document.getElementById('in-dir').value;
             document.getElementById('out-name').innerText = document.getElementById('in-name').value;
@@ -242,19 +282,18 @@
             
             // Архивын нэрийг автоматаар үүсгэх
             const rawName = document.getElementById('in-name').value;
-            // Тусгай тэмдэгтүүдийг арилгаж эхний үгийг авах
             const cleanName = rawName.replace(/“|”|'|"|ХХК|ХХК-ИЙН/gi, '').trim().split(' ')[0] || 'Байгууллага';
             const currentYear = new Date().getFullYear().toString().substr(-2);
             document.getElementById('out-archive-meta').innerText = `D/Албан бичиг – ${currentYear},,/01-01 ${cleanName}`;
         }
 
-        // Бланкийн хэвлэмэл өнгийг өөрчлөх
+        // Бланкийн өнгө
         function updateColor() {
             const color = document.getElementById('in-color').value;
             document.documentElement.style.setProperty('--mns-blue', color);
         }
 
-        // PDF Хөрвүүлэлт - ХАМГИЙН ӨНДӨР ЧАНАРААР
+        // PDF Хөрвүүлэлт
         async function generatePDF() {
             const element = document.getElementById('mns-document');
             const btn = document.getElementById('pdf-btn');
@@ -265,11 +304,9 @@
 
             const opt = {
                 margin: 0,
-                filename: 'Албан_Бичиг_MNS5140.pdf',
+                filename: 'Албан_Бичиг_Логотой.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                // scale: 4 нь фонтыг маш тод, ямар ч арзайлтгүй гаргана
                 html2canvas: { scale: 4, useCORS: true, letterRendering: true }, 
-                // exact A4 dimensions
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -277,7 +314,7 @@
                 await html2pdf().set(opt).from(element).save();
             } catch (error) {
                 console.error("PDF үүсгэхэд алдаа гарлаа: ", error);
-                alert("PDF үүсгэхэд алдаа гарлаа. Та дахин оролдоно уу.");
+                alert("PDF үүсгэхэд алдаа гарлаа.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
